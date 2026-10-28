@@ -63,7 +63,7 @@ input[type=file]{width:100%;padding:12px;background:#faf9ff;border:1px dashed #c
   <div class="header-inner">
     <div class="eyebrow">TEAM ESCAPE CHALLENGE · SMAT A MODULE</div>
     <h1>직장생활 방탈출</h1>
-    <p>예비 신입사원 여러분, 30문제와 5개의 실전 미션을 해결하고 입사 승인 코드를 획득하세요!</p>
+    <p>예비 신입사원 여러분, 30문제와 5개의 추리 관문, 5개의 실전 미션을 해결하고 입사 승인 코드를 획득하세요!</p>
   </div>
 </header>
 <main class="wrap">
@@ -78,7 +78,7 @@ input[type=file]{width:100%;padding:12px;background:#faf9ff;border:1px dashed #c
     <p>회사 입사를 위한 최종 승인 코드가 잠겼습니다. 다섯 가지 업무 구역에서 문제를 풀고, 팀 미션까지 성공해야 탈출할 수 있습니다.</p>
     <ol class="steps">
       <li>총 30문제를 팀원과 함께 해결하세요.</li>
-      <li>6문제마다 열리는 조별 미션을 직접 수행하세요.</li>
+      <li>각 구역의 6문제를 푼 뒤 추리 문제를 해결하고 조별 행동 미션을 수행하세요.</li>
       <li>마지막에는 팀원 모두가 함께 포즈를 취하고 기념사진을 촬영하세요.</li>
     </ol>
     <p class="muted">준비물: 휴대전화만 있으면 됩니다. 미션은 담당 선생님의 확인을 받고 완료하세요.</p>
@@ -93,6 +93,17 @@ input[type=file]{width:100%;padding:12px;background:#faf9ff;border:1px dashed #c
     <div id="feedback" class="feedback hidden"></div>
     <button id="checkBtn" class="primary" onclick="checkAnswer()" disabled>정답 확인</button>
     <button id="nextBtn" class="primary hidden" onclick="nextQuestion()">다음 단계로</button>
+  </section>
+
+  <section id="riddle" class="panel hidden" aria-live="polite">
+    <div class="kicker">BOSS RIDDLE · TEAM LOGIC</div>
+    <div class="topline"><span id="riddlePart" class="pill"></span><span class="muted">행동 미션 잠금 해제</span></div>
+    <h2 id="riddleTitle"></h2>
+    <p id="riddlePrompt"></p>
+    <div id="riddleOptions" class="options"></div>
+    <div id="riddleFeedback" class="feedback hidden"></div>
+    <button id="riddleCheckBtn" class="primary" onclick="checkRiddle()" disabled>정답 확인</button>
+    <button id="riddleNextBtn" class="primary hidden" onclick="openRiddleMission()">정답 확인 · 행동 미션 열기</button>
   </section>
 
   <section id="mission" class="panel hidden" aria-live="polite">
@@ -169,6 +180,14 @@ const questions = [
 {part:4,skill:"회의 기획 및 의전 실무",q:"회의에서 신제품 홍보자료를 금요일까지 완성하기로 했다. 회의 후 가장 적절한 행동은?",opts:["회의가 끝났으므로 더 이상 확인하지 않는다.","담당자와 기한을 정리해 공유하고 진행 상황을 확인한다.","담당자가 기억할 것이라 생각하고 기록하지 않는다.","마감일이 지난 뒤에 진행 여부를 확인한다."],a:1,why:"결정 사항을 공유하고 실행 상황을 확인해야 회의 결과가 실제 업무로 이어집니다."}
 ];
 
+const riddles = [
+{title:"수수께끼 1 · 세 개의 스위치",prompt:"방 밖에 스위치 3개가 있고, 방 안에는 전구 1개가 있습니다. 스위치 중 하나만 전구와 연결되어 있습니다. 방 안에는 한 번만 들어갈 수 있습니다. 어떤 스위치가 전구와 연결되어 있는지 어떻게 알아낼까요?",opts:["스위치를 하나씩 켠 채로 방에 여러 번 들어간다.","첫 번째를 몇 분 켰다가 끄고, 두 번째를 켠 뒤 들어가 전구의 빛과 열을 확인한다.","세 스위치를 모두 켠 뒤 들어간다.","스위치 색깔로 연결된 전구를 추측한다."],a:1,why:"전구가 켜져 있으면 두 번째, 꺼져 있지만 따뜻하면 첫 번째, 꺼져 있고 차가우면 세 번째입니다."},
+{title:"수수께끼 2 · 두 개의 문",prompt:"문 두 개 중 하나는 탈출구, 하나는 함정입니다. 경비원 한 명은 항상 진실을 말하고 다른 한 명은 항상 거짓말을 합니다. 누구인지 모릅니다. 한 명에게 한 번만 질문할 수 있다면 어떻게 탈출구를 찾을까요?",opts:["어느 문이 예쁜지 묻는다.","‘다른 경비원에게 탈출구를 물으면 어느 문을 가리킬까요?’라고 묻고, 가리킨 문 반대쪽을 선택한다.","두 경비원에게 동시에 질문한다.","아무 문이나 선택한다."],a:1,why:"진실을 말하는 경비원도 거짓말쟁이가 가리킬 문을 알려주고, 거짓말쟁이도 진실을 말하는 경비원이 가리킬 문을 거짓으로 알려줍니다. 따라서 가리킨 문 반대쪽이 탈출구입니다."},
+{title:"수수께끼 3 · 무거운 동전",prompt:"동전 8개 중 하나만 다른 동전보다 무겁습니다. 양팔저울을 단 두 번만 사용할 수 있습니다. 무거운 동전을 찾는 가장 좋은 방법은?",opts:["동전 8개를 한꺼번에 한쪽에 올린다.","3개 대 3개를 비교하고, 결과에 따라 의심되는 동전 2~3개를 다시 비교한다.","동전을 하나씩 모두 비교한다.","눈으로 보고 무거워 보이는 동전을 고른다."],a:1,why:"3개 대 3개를 비교하면 무거운 쪽의 3개 또는 남은 2개로 후보를 좁힐 수 있습니다. 두 번째 비교로 무거운 동전을 찾습니다."},
+{title:"수수께끼 4 · 숫자 암호",prompt:"숫자 배열의 규칙을 찾아 물음표에 들어갈 숫자를 고르세요. 1, 11, 21, 1211, 111221, ?",opts:["123123","312211","211221","111222"],a:1,why:"앞 숫자를 읽어 개수를 말하는 규칙입니다. 111221은 ‘1이 세 개, 2가 두 개, 1이 한 개’이므로 312211입니다."},
+{title:"수수께끼 5 · 세 사람의 진술",prompt:"분실된 회의 자료를 찾고 있습니다. 세 사람 중 한 명만 자료를 가져갔고, 진술 중 참은 하나뿐입니다. 민수: ‘지수가 가져갔어.’ 지수: ‘내가 가져가지 않았어.’ 현우: ‘민수는 가져가지 않았어.’ 누가 자료를 가져갔을까요?",opts:["민수","지수","현우","주어진 조건만으로는 알 수 없다"],a:0,why:"민수가 가져갔다면 민수의 말은 거짓, 지수의 말은 참, 현우의 말은 거짓이 되어 참이 하나뿐이라는 조건을 만족합니다."}
+];
+let activeRiddle=0, riddleSelected=null, riddleAnswered=false;
 const missions = [
 {title:"미션 1 · 비즈니스 매너 및 에티켓",name:"첫인상 합격 프로젝트",summary:"조원 전원이 담당 선생님에게 찾아가 45도 정중례로 인사하세요.",checks:["조원 전원이 담당 선생님에게 함께 이동했다.","각자 바른 자세로 45도 정중례를 했다.","“안녕하십니까? 오늘 잘 부탁드립니다.”라고 정중하게 인사했다."]},
 {title:"미션 2 · 이미지 메이킹",name:"10초 만에 호감형 신입사원",summary:"모든 조원이 신입사원처럼 입장하고 자세·표정·자기소개를 보여주세요.",checks:["조원 전원이 차례로 바른 자세로 섰다.","자연스러운 미소와 적절한 시선으로 인사했다.","“안녕하십니까? 신입사원 ○○○입니다. 잘 부탁드립니다.”라고 자기소개했다."]},
@@ -178,7 +197,7 @@ const missions = [
 ];
 let index=0, score=0, selected=null, answered=false, completedMissions=new Set();
 const $=id=>document.getElementById(id);
-function show(id){["intro","quiz","mission","finale"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
+function show(id){["intro","quiz","riddle","mission","finale"].forEach(x=>$(x).classList.toggle("hidden",x!==id))}
 function startGame(){show("quiz");renderQuestion()}
 function renderQuestion(){
  selected=null;answered=false;
@@ -218,11 +237,30 @@ function checkAnswer(){
  updateProgress();
 }
 function nextQuestion(){
+ if(!answered)return; // 정답을 맞힌 경우에만 다음 단계로 이동
  index++;
- if(index%6===0){showMission(index/6-1);return}
+ if(index%6===0){showRiddle(index/6-1);return}
  if(index>=questions.length){show("finale");return}
  renderQuestion();
 }
+
+function showRiddle(n){
+ activeRiddle=n; riddleSelected=null; riddleAnswered=false;
+ const r=riddles[n]; show("riddle");
+ $("riddlePart").textContent=`파트 ${n+1} · 미션 전 추리 문제`;
+ $("riddleTitle").textContent=r.title; $("riddlePrompt").textContent=r.prompt;
+ $("riddleOptions").innerHTML="";
+ r.opts.forEach((o,i)=>{const b=document.createElement("button");b.className="option";b.innerHTML=`<span class="letter">${String.fromCharCode(65+i)}</span><span>${escapeHTML(o)}</span>`;b.onclick=()=>{if(riddleAnswered)return;riddleSelected=i;document.querySelectorAll("#riddleOptions .option").forEach((el,j)=>el.classList.toggle("selected",j===i));$("riddleCheckBtn").disabled=false};$("riddleOptions").appendChild(b)});
+ $("riddleFeedback").className="feedback hidden";$("riddleFeedback").textContent="";$("riddleCheckBtn").classList.remove("hidden");$("riddleCheckBtn").disabled=true;$("riddleNextBtn").classList.add("hidden");
+}
+function checkRiddle(){
+ if(riddleSelected===null||riddleAnswered)return;
+ const r=riddles[activeRiddle], f=$("riddleFeedback");
+ if(riddleSelected===r.a){riddleAnswered=true;document.querySelectorAll("#riddleOptions .option").forEach(el=>el.disabled=true);f.className="feedback good";f.textContent="정답입니다! "+r.why;$("riddleCheckBtn").classList.add("hidden");$("riddleNextBtn").classList.remove("hidden");}
+ else{f.className="feedback bad";f.textContent="아직 정답이 아닙니다. 팀원들과 다시 추리해 보세요!";$("riddleCheckBtn").disabled=true;}
+}
+function openRiddleMission(){if(!riddleAnswered)return;showMission(activeRiddle)}
+
 function showMission(n){
  const m=missions[n];show("mission");$("missionTitle").textContent=m.title;$("missionPill").textContent=`조별 미션 ${n+1} / 5`;$("missionName").textContent=m.name;$("missionSummary").textContent=m.summary;
  $("missionChecks").innerHTML="";
