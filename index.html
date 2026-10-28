@@ -196,11 +196,25 @@ function renderQuestion(){
 function escapeHTML(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function checkAnswer(){
  if(selected===null||answered)return;
- const q=questions[index], f=$("feedback");answered=true;
- document.querySelectorAll(".option").forEach((el,j)=>el.disabled=true);
- if(selected===q.a){score+=10;$("score").textContent=score;f.className="feedback good";f.textContent="정답입니다! "+q.why}
- else {f.className="feedback bad";f.textContent="아쉽지만 정답이 아닙니다. "+q.why+" 정답을 확인했으니 다음 단계로 이동합니다."}
- $("checkBtn").classList.add("hidden");$("nextBtn").classList.remove("hidden");$("nextBtn").textContent=((index+1)%6===0)?"조별 미션으로 이동":"다음 문제";
+ const q=questions[index], f=$("feedback");
+ if(selected===q.a){
+   answered=true;
+   document.querySelectorAll(".option").forEach(el=>el.disabled=true);
+   score+=10;
+   $("score").textContent=score;
+   f.className="feedback good";
+   f.textContent="정답입니다! "+q.why;
+   $("checkBtn").classList.add("hidden");
+   $("nextBtn").classList.remove("hidden");
+   $("nextBtn").textContent=((index+1)%6===0)?"조별 미션으로 이동":"다음 문제";
+ } else {
+   f.className="feedback bad";
+   f.textContent="아직 정답이 아닙니다. 정답을 확인하고 다시 선택해 보세요!";
+   document.querySelectorAll(".option").forEach(el=>el.disabled=false);
+   $("checkBtn").disabled=true;
+   $("checkBtn").classList.remove("hidden");
+   $("nextBtn").classList.add("hidden");
+ }
  updateProgress();
 }
 function nextQuestion(){
